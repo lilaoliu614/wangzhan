@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>FPS</title>
+<style>
+    body {
+        font-family: Arial, sans-serif;
+        margin: 0;
+        padding: 100px;
+        height: 500vh;
+        display: flex;
+        flex-direction: column;
+        justify-content: flex-start;
+        background: White;
+    }
+    #fpsContainer {
+        font-size: 24px;
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        padding: 10px;
+        background: #fff;
+        border: 2px solid #ddd;
+        border-radius: 10px;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    }
+</style>
+</head>
+<body>
+<div id="fpsContainer">
+    <div id="fpsDisplay">0 FPS</div>
+</div>
+
+<script>
+    let lastTime = performance.now();
+    let fpsDisplay = document.getElementById('fpsDisplay');
+    let frameCount = 0;
+    let fpsValues = [];
+
+    function updateFPS() {
+        requestAnimationFrame(updateFPS);
+        frameCount++;
+        const now = performance.now();
+        const elapsed = now - lastTime;
+
+        if (elapsed > 1000) {
+            const currentFps = Math.round(frameCount / (elapsed / 1000));
+            fpsDisplay.textContent = currentFps + ' FPS';
+            frameCount = 0;
+            lastTime = now;
+
+            // 保存当前帧率值
+            fpsValues.push(currentFps);
+            if (fpsValues.length > 10) {
+                fpsValues.shift();
+            }
+
+            // 计算平均和最高帧率
+            const avgFps = Math.round(fpsValues.reduce((a, b) => a + b, 0) / fpsValues.length);
+            const maxFps = Math.max(...fpsValues);
+
+            // 更新显示平均和最高帧率
+            fpsDisplay.textContent += ` (平均: ${avgFps} FPS, 最大: ${maxFps} FPS)`;
+        }
+    }
+
+    updateFPS();
+
+    // 检测是否是首次加载页面
+    if (!localStorage.getItem('firstLoad')) {
+        localStorage.setItem('firstLoad', 'true');
+    } else {
+        // 如果不是首次加载，则尝试创建悬浮窗
+        window.onunload = function() {
+            createFloatingWindow();
+        };
+    }
+
+    function createFloatingWindow() {
+        // 创建悬浮窗
+        var floatingWindow = window.open("", "FloatingWindow", "width=300,height=200,scrollbars=no,resizable=no,toolbar=no,status=no,location=no,menubar=no");
+        floatingWindow.document.write(`
+            <html>
+                <head>
+                    <title>悬浮窗</title>
+                    <style>
+                        body {
+                            font-family: Arial, sans-serif;
+                            margin: 0;
+                            padding: 10px;
+                            background: #f7f7f7;
+                        }
+                        #fpsDisplay {
+                            font-size: 16px;
+                            padding: 5px;
+                            background: #fff;
+                            border: 1px solid #ddd;
+                            border-radius: 5px;
+                            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+                        }
+                    </style>
+                </head>
+                <body>
+                    <div id="fpsDisplay"></div>
+                </body>
+            </html>
+        `);
+        floatingWindow.document.getElementById('fpsDisplay').textContent = "悬浮窗已打开";
+    }
+</script>
+</body>
+</html>
